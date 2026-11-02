@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Личный кабинет — NEFT FITNESS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="container header__inner">
+    <a href="index.html" class="logo">
+      <span>NEFT</span>
+      <span>FITNESS</span>
+    </a>
+    <nav class="nav">
+      <a href="index.html">Главная</a>
+      <a href="index.html#memberships">Абонементы</a>
+      <a href="index.html#reviews">Отзывы</a>
+      <a href="about.html">О нас</a>
+    </nav>
+    <div class="header__actions" id="headerActions"></div>
+  </div>
+</header>
+
+<main class="account">
+  <div class="container">
+    <div id="accountContent">
+      <p class="empty">Загрузка...</p>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container footer__inner">
+    <div>
+      <a href="index.html" class="logo logo--light">
+        <span>NEFT</span>
+        <span>FITNESS</span>
+      </a>
+      <p style="margin-top:12px">Топливо для твоей жизни.</p>
+      <p style="margin-top:12px;font-size:13px;color:#A8969A">Клуб сети PERSONA SPORT №4. Открыт при поддержке ФК УФА.</p>
+    </div>
+    <div>
+      <h4>Контакты</h4>
+      <p><a href="tel:+79374974444" style="color:#C98A96">+7 937 497-44-44</a></p>
+      <p><a href="tel:+72260200" style="color:#C98A96">226-02-00</a></p>
+      <p>hello@neft.fit</p>
+    </div>
+    <div>
+      <h4>Разделы</h4>
+      <p><a href="index.html" style="color:#C98A96">Главная</a></p>
+      <p><a href="index.html#memberships" style="color:#C98A96">Абонементы</a></p>
+      <p><a href="about.html" style="color:#C98A96">О нас</a></p>
+    </div>
+  </div>
+  <div class="footer__bottom">© 2026 NEFT FITNESS · PERSONA SPORT. Все права защищены.</div>
+</footer>
+
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
+<script>
+
+document.addEventListener('DOMContentLoaded', () => {
+  const user = Auth.getCurrent();
+  const root = document.getElementById('accountContent');
+
+  if (!user) {
+    root.innerHTML = `
+      <div class="panel" style="max-width:520px;margin:0 auto;text-align:center">
+        <h2>Требуется вход</h2>
+        <p>Чтобы открыть кабинет, войдите или зарегистрируйтесь.</p>
+        <a href="index.html" class="btn btn--cta">На главную</a>
+      </div>`;
+    return;
+  }
+
+  renderCabinet(user);
+});
+
+function renderCabinet(user) {
+  const root = document.getElementById('accountContent');
+  const isAdmin = user.role === 'admin';
+
+  root.innerHTML = `
+    <div class="account__layout">
+      <aside class="sidebar">
+        <a href="#" class="active" data-view="overview">Обзор</a>
+        ${isAdmin ? `
+          <a href="#" data-view="users">Пользователи</a>
+          <a href="#" data-view="purchases">Все покупки</a>
+          <a href="#" data-view="reviews-admin">Отзывы</a>
+        ` : `
+          <a href="#" data-view="card">Моя карта</a>
+          <a href="#" data-view="purchases">Мои абонементы</a>
+        `}
+        <a href="#" data-view="settings">Настройки</a>
+      </aside>
+      <section class="panel" id="panelContent"></section>
+    </div>
+  `;
+
+  document.querySelectorAll('.sidebar a').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      document.querySelectorAll('.sidebar a').forEach(x => x.classList.remove('active'));
+      a.classList.add('active');
+      const view = a.dataset.view;
+      if (view === 'overview') viewOverview(user);
+      else if (view === 'card') viewCard(user);
+      else if (view === 'purchases') isAdmin ? viewAllPurchases() : viewMyPurchases(user);
+      else if (view === 'users') viewUsers();
+      else if (view === 'reviews-admin') viewAdminReviews();
+      else if (view === 'settings') viewSettings(user);
+    });
+  });
+
+  viewOverview(user);
+}
+
+function viewOverview(user) {
+  const panel = document.getElementById('panelContent');
+  const purchases = DB.getPurchases(user.id);
+  const active = purchases.find(p => p.status === 'active');
+
+  panel.innerHTML = `
+    <h2>Привет, ${user.name.split(' ')[0]} 👋</h2>
+    <p>Твоя роль: <strong>${user.role === 'admin' ? 'Администратор' : 'Клиент'}</strong> · Категория: <strong>${user.category}</strong></p>
+
+    ${active ? `
+      <h3>Активный абонемент</h3>
+      <p><strong style="font-size:20px;color:var(--burgundy)">${active.membership.title}</strong></p>
+      <p>Действует до: ${active.expiresAt}</p>
+    ` : `<p class="empty">Активных абонементов нет. <a href="index.html#memberships">Выбрать</a></p>`}
+
+    <h3>Быстрые действия</h3>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <a href="index.html#memberships" class="btn btn--cta">Купить абонемент</a>
+      <a href="index.html#reviews" class="btn btn--ghost">Оставить отзыв</a>
+    </div>
+  `;
+}
+
+function viewCard(user) {
+  const panel = document.getElementById('panelContent');
+  const seed = (user.id * 7 + user.phone.length * 13) % 1000;
+  panel.innerHTML = `
+    <h2>Моя карта</h2>
+    <p>Покажите этот QR на турникете клуба.</p>
+    <div class="qr">
+      <svg width="180" height="180" viewBox="0 0 21 21" shape-rendering="crispEdges">
+        <rect width="21" height="21" fill="#fff"/>
+        ${generateQRPattern(seed)}
+      </svg>
+    </div>
+    <p style="margin-top:16px">Владелец: <strong>${user.name}</strong></p>
+    <p>Телефон: <strong>${user.phone}</strong></p>
+  `;
+}
+function generateQRPattern(seed) {
+  const cells = [];
+  let s = seed;
+  const rand = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+  for (let y = 0; y < 21; y++) {
+    for (let x = 0; x < 21; x++) {
+      const inCorner = (x < 7 && y < 7) || (x > 13 && y < 7) || (x < 7 && y > 13);
+      const cornerDot = ((x>=2&&x<=4)&&(y>=2&&y<=4)) || ((x>=16&&x<=18)&&(y>=2&&y<=4)) || ((x>=2&&x<=4)&&(y>=16&&y<=18));
+      if (inCorner) {
+        if (cornerDot) cells.push(`<rect x="${x}" y="${y}" width="1" height="1" fill="#1A1416"/>`);
+      } else if (rand() > 0.5) {
+        cells.push(`<rect x="${x}" y="${y}" width="1" height="1" fill="#1A1416"/>`);
+      }
+    }
+  }
+  return cells.join('');
+}
+
+function viewMyPurchases(user) {
+  const panel = document.getElementById('panelContent');
+  const purchases = DB.getPurchases(user.id);
+  if (!purchases.length) {
+    panel.innerHTML = `<h2>Мои абонементы</h2><p class="empty">Покупок пока нет. <a href="index.html#memberships">Выбрать абонемент</a></p>`;
+    return;
+  }
+  panel.innerHTML = `
+    <h2>Мои абонементы</h2>
+    <table>
+      <thead><tr><th>Абонемент</th><th>Цена</th><th>Куплен</th><th>До</th><th>Статус</th></tr></thead>
+      <tbody>
+        ${purchases.map(p => `
+          <tr>
+            <td>${p.membership.title}</td>
+            <td>${p.price.toLocaleString('ru-RU')} ₽</td>
+            <td>${p.purchasedAt}</td>
+            <td>${p.expiresAt}</td>
+            <td><span class="status status--${p.status}">${statusLabel(p.status)}</span></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+const statusLabel = s => s === 'active' ? 'Активен' : s === 'frozen' ? 'Заморожен' : 'Истёк';
+
+function viewUsers() {
+  const panel = document.getElementById('panelContent');
+  const users = DB.getAllUsers();
+  panel.innerHTML = `
+    <h2>Пользователи</h2>
+    <p>Всего: ${users.length}</p>
+    <table>
+      <thead><tr><th>ID</th><th>Имя</th><th>Телефон</th><th>Email</th><th>Категория</th><th>Роль</th><th>Действие</th></tr></thead>
+      <tbody>
+        ${users.map(u => `
+          <tr>
+            <td>${u.id}</td>
+            <td>${u.name}</td>
+            <td>${u.phone}</td>
+            <td>${u.email}</td>
+            <td>${u.category}</td>
+            <td><strong>${u.role}</strong></td>
+            <td>
+              <button class="btn btn--ghost" style="padding:6px 10px;font-size:11px"
+                onclick="toggleRole(${u.id})">
+                ${u.role === 'admin' ? 'Сделать клиентом' : 'Сделать админом'}
+              </button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+window.toggleRole = (id) => {
+  const user = DB.getAllUsers().find(u => u.id === id);
+  DB.setUserRole(id, user.role === 'admin' ? 'user' : 'admin');
+  viewUsers();
+};
+
+function viewAllPurchases() {
+  const panel = document.getElementById('panelContent');
+  const purchases = DB.getAllPurchases();
+  const users = DB.getAllUsers();
+  const memberships = DB.getMemberships();
+  panel.innerHTML = `
+    <h2>Все покупки</h2>
+    ${purchases.length ? `
+    <table>
+      <thead><tr><th>#</th><th>Клиент</th><th>Абонемент</th><th>Сумма</th><th>Дата</th><th>Статус</th></tr></thead>
+      <tbody>
+        ${purchases.map(p => {
+          const u = users.find(x => x.id === p.userId);
+          const m = memberships.find(x => x.id === p.membershipId);
+          return `<tr>
+            <td>${p.id}</td>
+            <td>${u ? u.name : '—'}</td>
+            <td>${m ? m.title : '—'}</td>
+            <td>${p.price.toLocaleString('ru-RU')} ₽</td>
+            <td>${p.purchasedAt}</td>
+            <td><span class="status status--${p.status}">${statusLabel(p.status)}</span></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>` : '<p class="empty">Покупок пока нет.</p>'}
+  `;
+}
+
+function viewAdminReviews() {
+  const panel = document.getElementById('panelContent');
+  const reviews = DB.getReviews();
+  panel.innerHTML = `
+    <h2>Модерация отзывов</h2>
+    ${reviews.length ? reviews.map(r => `
+      <div class="review" style="margin-bottom:12px">
+        <div class="review__stars">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div>
+        <p class="review__text">${r.text}</p>
+        <div class="review__author">${r.author} · ${r.date}</div>
+        <button class="btn btn--ghost" style="margin-top:8px;padding:6px 12px;font-size:12px"
+          onclick="removeReview(${r.id})">Удалить</button>
+      </div>
+    `).join('') : '<p class="empty">Отзывов нет.</p>'}
+  `;
+}
+window.removeReview = (id) => {
+  if (!confirm('Удалить отзыв?')) return;
+  DB.deleteReview(id);
+  viewAdminReviews();
+};
+
+function viewSettings(user) {
+  const panel = document.getElementById('panelContent');
+  panel.innerHTML = `
+    <h2>Настройки</h2>
+    <form id="settingsForm" class="auth-form" style="max-width:400px">
+      <label>Имя<input type="text" name="name" value="${user.name}" required></label>
+      <label>Email<input type="email" name="email" value="${user.email}" required></label>
+      <label>Телефон<input type="tel" name="phone" value="${user.phone}" required></label>
+      <button class="btn btn--cta" type="submit">Сохранить</button>
+    </form>
+  `;
+  document.getElementById('settingsForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const data = DB.get();
+    const u = data.users.find(x => x.id === user.id);
+    u.name = fd.get('name');
+    u.email = fd.get('email');
+    u.phone = fd.get('phone');
+    DB.save(data);
+    localStorage.setItem('neft_current_user', JSON.stringify(u));
+    alert('Сохранено');
+    renderHeaderActions();
+  });
+}
+</script>
+</body>
+</html>

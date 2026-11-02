@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEFT FITNESS — фитнес-клуб сети PERSONA SPORT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="container header__inner">
+    <a href="index.html" class="logo">
+      <span>NEFT</span>
+      <span>FITNESS</span>
+    </a>
+    <nav class="nav">
+      <a href="#services">Услуги</a>
+      <a href="#memberships">Абонементы</a>
+      <a href="#discounts">Скидки</a>
+      <a href="#reviews">Отзывы</a>
+      <a href="about.html">О нас</a>
+    </nav>
+    <div class="header__actions" id="headerActions"></div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container hero__inner">
+    <h1>ТВОЙ <span class="text-burgundy">NEFT</span>.<br>ТВОЯ СИЛА.</h1>
+    <p>Первый шаг — бесплатно. Первая тренировка с тренером — 0 ₽</p>
+    <div class="hero__cta">
+      <button class="btn btn--cta" data-open="register">Записаться на пробную</button>
+      <a href="#memberships" class="btn btn--ghost">Смотреть абонементы</a>
+    </div>
+    <div class="hero__trust">
+      <span>4 зала</span><span>25+ направлений</span><span>Бассейн 25м</span><span>Работаем 24/7</span>
+    </div>
+  </div>
+</section>
+
+<section class="section section--about" id="about">
+  <div class="container about-teaser">
+    <div class="about-teaser__text">
+      <h2 class="section__title">О клубе NEFT</h2>
+      <p style="margin-top:16px">
+        Сеть фитнес-клубов <strong>PERSONA SPORT</strong> в короткие сроки стала
+        равноправным членом индустрии фитнеса и задаёт тон в сфере красоты и спорта
+        в республике. <strong>NEFT FITNESS</strong> — четвёртый клуб сети и воплощение
+        всех идей, накопленного опыта и бесконечного стремления к совершенству
+        холдинга PERSONA SPORT.
+      </p>
+      <p>
+        Открытие клуба проходит при поддержке футбольного клуба <strong>УФА</strong>.
+        NEFT создан для молодых и амбициозных людей, уверенных в себе и в завтрашнем дне.
+      </p>
+      <p class="about-teaser__slogan">НЕФТЬ — скрытые ресурсы твоего тела!</p>
+      <a href="about.html" class="btn btn--cta">Подробнее о нас</a>
+    </div>
+    <div class="about-teaser__media">
+      <div class="about-teaser__stat">
+        <span class="about-teaser__num">4</span>
+        <span>клуба в сети<br>PERSONA SPORT</span>
+      </div>
+      <div class="about-teaser__stat">
+        <span class="about-teaser__num">1</span>
+        <span>команда<br>профессионалов</span>
+      </div>
+      <div class="about-teaser__stat">
+        <span class="about-teaser__num">ФК УФА</span>
+        <span>официальная<br>поддержка</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="services">
+  <div class="container">
+    <h2 class="section__title">Услуги</h2>
+    <p class="section__sub">Каждое направление доступно в разных абонементах — выбирай под себя.</p>
+    <div class="grid grid--3" id="servicesGrid"></div>
+  </div>
+</section>
+
+<section class="section section--alt" id="memberships">
+  <div class="container">
+    <h2 class="section__title">Абонементы</h2>
+    <p class="section__sub">Пенсионерам, студентам и детям — отдельные условия. Скидки применяются автоматически при оформлении.</p>
+    <div class="grid grid--3" id="membershipsGrid"></div>
+  </div>
+</section>
+
+<section class="section" id="discounts">
+  <div class="container">
+    <h2 class="section__title">Скидки</h2>
+    <p class="section__sub">Действуют при предъявлении документа на ресепшене.</p>
+    <div class="grid grid--3" id="discountsGrid"></div>
+  </div>
+</section>
+
+<section class="section section--alt" id="reviews">
+  <div class="container">
+    <h2 class="section__title">Отзывы</h2>
+    <div class="grid grid--3" id="reviewsGrid"></div>
+
+    <div class="review-form" id="reviewFormWrap" hidden>
+      <h3>Оставить отзыв</h3>
+      <form id="reviewForm">
+        <textarea id="reviewText" placeholder="Расскажи о своём опыте..." required minlength="10"></textarea>
+        <select id="reviewRating" required>
+          <option value="5">★★★★★</option>
+          <option value="4">★★★★</option>
+          <option value="3">★★★</option>
+          <option value="2">★★</option>
+          <option value="1">★</option>
+        </select>
+        <button type="submit" class="btn btn--cta">Отправить</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container footer__inner">
+    <div>
+      <a href="index.html" class="logo logo--light">
+        <span>NEFT</span>
+        <span>FITNESS</span>
+      </a>
+      <p style="margin-top:12px">Топливо для твоей жизни.</p>
+      <p style="margin-top:12px;font-size:13px;color:#A8969A">Клуб сети PERSONA SPORT №4. Открыт при поддержке ФК УФА.</p>
+    </div>
+    <div>
+      <h4>Контакты</h4>
+      <p><a href="tel:+79374974444" style="color:#C98A96">+7 937 497-44-44</a></p>
+      <p><a href="tel:+72260200" style="color:#C98A96">226-02-00</a></p>
+      <p>hello@neft.fit</p>
+    </div>
+    <div>
+      <h4>Разделы</h4>
+      <p><a href="about.html" style="color:#C98A96">О нас</a></p>
+      <p><a href="#memberships" style="color:#C98A96">Абонементы</a></p>
+      <p><a href="#reviews" style="color:#C98A96">Отзывы</a></p>
+    </div>
+  </div>
+  <div class="footer__bottom">© 2026 NEFT FITNESS · PERSONA SPORT. Все права защищены.</div>
+</footer>
+
+<div class="modal" id="authModal" hidden>
+  <div class="modal__overlay" data-close></div>
+  <div class="modal__box">
+    <button class="modal__close" data-close>×</button>
+    <div class="tabs">
+      <button class="tab tab--active" data-tab="login">Вход</button>
+      <button class="tab" data-tab="register">Регистрация</button>
+    </div>
+
+    <form class="auth-form" id="loginForm" data-panel="login">
+      <label>Телефон<input type="tel" name="phone" placeholder="+7 999 123-45-67" required></label>
+      <label>Пароль<input type="password" name="password" required minlength="6"></label>
+      <button type="submit" class="btn btn--cta btn--full">Войти</button>
+      <p class="hint">Демо-админ: <code>+7 999 000-00-00</code> / <code>admin123</code></p>
+    </form>
+
+    <form class="auth-form" id="registerForm" data-panel="register" hidden>
+      <label>Имя<input type="text" name="name" required minlength="2"></label>
+      <label>Телефон<input type="tel" name="phone" placeholder="+7 999 123-45-67" required></label>
+      <label>Email<input type="email" name="email" required></label>
+      <label>Пароль<input type="password" name="password" required minlength="6"></label>
+      <label>Категория клиента
+        <select name="category" required>
+          <option value="regular">Обычный</option>
+          <option value="student">Студент</option>
+          <option value="pensioner">Пенсионер</option>
+          <option value="child">Ребёнок (до 14 лет)</option>
+        </select>
+      </label>
+      <button type="submit" class="btn btn--cta btn--full">Создать аккаунт</button>
+    </form>
+
+    <div class="form-msg" id="authMsg"></div>
+  </div>
+</div>
+
+<div class="modal" id="buyModal" hidden>
+  <div class="modal__overlay" data-close></div>
+  <div class="modal__box">
+    <button class="modal__close" data-close>×</button>
+    <h3 id="buyTitle">Оформление</h3>
+    <div id="buyInfo" class="buy-info"></div>
+    <button class="btn btn--cta btn--full" id="buyConfirm">Подтвердить покупку</button>
+    <div class="form-msg" id="buyMsg"></div>
+  </div>
+</div>
+
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
