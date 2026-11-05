@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 function renderServices() {
   const grid = document.getElementById('servicesGrid');
   if (!grid) return;
-  
   const services = [
     { title: 'Тренажёрный зал', desc: 'Силовые и кардио-тренажёры, зона свободных весов.', image: 'img/gym.jpg' },
     { title: 'Бассейн 25м', desc: 'Дорожки 25 метров, аквааэробика, свободное плавание.', image: 'img/pool.webp' },
@@ -18,12 +17,10 @@ function renderServices() {
     { title: 'Хаммам и сауна', desc: 'Восстановление после тренировок.', image: 'img/sauna.jpg' },
     { title: 'Тренер', desc: 'Индивидуальная программа с тренером.', image: 'img/trener.jpg' }
   ];
-  
   grid.innerHTML = services.map(s => `
       <article class="card card--service">
         <div class="card--service__img">
-          <img src="${s.image}" alt="${s.title}" loading="lazy" 
-               onerror="this.style.display='none'; this.parentElement.classList.add('fallback-bg'); this.parentElement.innerHTML='<span>${s.title.charAt(0)}</span>';">
+          <img src="${s.image}" alt="${s.title}" loading="lazy" onerror="this.style.display='none'; this.parentElement.classList.add('fallback-bg'); this.parentElement.innerHTML='<span>${s.title.charAt(0)}</span>';">
         </div>
         <div class="card__content">
           <h3>${s.title}</h3>
@@ -37,7 +34,6 @@ async function renderMemberships() {
   const grid = document.getElementById('membershipsGrid');
   if (!grid) return;
   const user = await Auth.getCurrent();
-  
   let memberships = [];
   try {
     const res = await fetch('/api/memberships');
@@ -49,14 +45,35 @@ async function renderMemberships() {
     if (cached) memberships = JSON.parse(cached);
   }
 
+  const discountMap = {
+    'student': 15,
+    'pensioner': 20,
+    'child': 25,
+    'regular': 10
+  };
+
   grid.innerHTML = memberships.map(m => {
     const canBuy = !user || m.allowed_categories.includes(user.category);
+    let finalPrice = m.price;
+    let hasDiscount = false;
+    
+    if (user && discountMap[user.category]) {
+      const discountPercent = discountMap[user.category];
+      finalPrice = Math.round(m.price * (1 - discountPercent / 100));
+      hasDiscount = true;
+    }
+
+    const priceHTML = hasDiscount 
+      ? `<span style="text-decoration:line-through; color:var(--text-dim); font-size:24px; margin-right:8px;">${m.price.toLocaleString('ru-RU')} ₽</span><span style="color:var(--burgundy); font-weight:bold;">${finalPrice.toLocaleString('ru-RU')} ₽</span>`
+      : `${m.price.toLocaleString('ru-RU')} ₽`;
+
     return `
       <article class="card card--membership">
         <h3 style="font-family:'Bebas Neue';font-size:26px;text-transform:uppercase;margin-bottom:8px;">${m.title}</h3>
-        <div class="price">${m.price.toLocaleString('ru-RU')} ₽<small>/${m.period}</small></div>
+        <div class="price">${priceHTML}<small>/${m.period}</small></div>
+        ${hasDiscount ? `<p style="color:var(--burgundy); font-size:12px; margin-bottom:12px; font-weight:bold;">Скидка ${discountMap[user.category]}% (${user.category})</p>` : ''}
         <ul class="features">${m.features.map(f => `<li>${f}</li>`).join('')}</ul>
-        <button class="btn ${canBuy ? 'btn--cta' : 'btn--ghost'}" data-buy="${m.id}" data-price="${m.price}" ${canBuy ? '' : 'disabled'}>
+        <button class="btn ${canBuy ? 'btn--cta' : 'btn--ghost'}" data-buy="${m.id}" data-price="${finalPrice}" ${canBuy ? '' : 'disabled'}>
           ${canBuy ? 'Выбрать' : 'Недоступно'}
         </button>
       </article>`;
@@ -112,14 +129,12 @@ async function initReviewForm() {
   const wrap = document.getElementById('reviewFormWrap');
   const form = document.getElementById('reviewForm');
   if (!wrap || !form) return;
-  
   if (await Auth.getCurrent()) wrap.hidden = false;
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const text = document.getElementById('reviewText').value.trim();
     const rating = document.getElementById('reviewRating').value;
-    
     const res = await fetch('/api/reviews', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -152,7 +167,6 @@ function openBuyModal(id, price) {
 function initBuyModal() {
   const modal = document.getElementById('buyModal');
   if (!modal) return;
-  
   document.getElementById('buyConfirm').addEventListener('click', async () => {
     const res = await fetch('/api/purchases', {
       method: 'POST',
@@ -160,7 +174,6 @@ function initBuyModal() {
       body: JSON.stringify({ membershipId: pendingBuyId, price: pendingPrice }),
       credentials: 'include'
     });
-    
     const msg = document.getElementById('buyMsg');
     if (res.ok) {
       msg.className = 'form-msg show form-msg--ok'; 
@@ -171,6 +184,5 @@ function initBuyModal() {
       msg.textContent = 'Ошибка покупки (возможно, нет авторизации)';
     }
   });
-  
   modal.querySelectorAll('[data-close]').forEach(el => el.addEventListener('click', () => modal.hidden = true));
 }

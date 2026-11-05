@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Личный кабинет — NEFT FITNESS</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -59,10 +59,7 @@
   <div class="footer__bottom">© 2026 NEFT FITNESS · PERSONA SPORT. Все права защищены.</div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-<!-- 2. Ваши скрипты -->
 <script src="js/auth.js"></script>
-
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
   const user = await Auth.getCurrent();
@@ -112,7 +109,7 @@ async function renderCabinet(user) {
 
 function viewOverview(user) {
   document.getElementById('panelContent').innerHTML = `
-    <h2>Привет, ${user.name} 👋</h2>
+    <h2>Привет, ${user.name}</h2>
     <p>Роль: <strong>${user.role === 'admin' ? 'Админ' : 'Клиент'}</strong></p>
     <a href="index.html#memberships" class="btn btn--cta">Купить абонемент</a>
   `;
@@ -121,22 +118,16 @@ function viewOverview(user) {
 function viewCard(user) {
   document.getElementById('panelContent').innerHTML = `
     <h2>Моя карта</h2>
-    <div class="qr" id="qrcode-container" style="background:#fff; padding:10px; display:inline-block;"></div>
-    <p style="margin-top:16px">Владелец: <strong>${user.name}</strong></p>
+    <div style="background: linear-gradient(135deg, #800020, #1A1416); color: #fff; padding: 32px; border-radius: 16px; max-width: 400px; box-shadow: 0 12px 32px rgba(128,0,32,0.25); margin-bottom: 24px; position: relative; overflow: hidden;">
+      <div style="position: absolute; top: -20px; right: -20px; font-size: 120px; opacity: 0.1; font-family: 'Bebas Neue';">NEFT</div>
+      <h3 style="font-family: 'Bebas Neue'; font-size: 32px; margin-bottom: 24px; letter-spacing: 0.05em;">КЛУБНАЯ КАРТА</h3>
+      <p style="font-size: 14px; opacity: 0.8; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.1em;">Владелец</p>
+      <p style="font-size: 20px; font-weight: 600; margin-bottom: 20px;">${user.name}</p>
+      <p style="font-size: 14px; opacity: 0.8; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.1em;">ID клиента</p>
+      <p style="font-family: monospace; font-size: 18px; letter-spacing: 2px;">${String(user.id).padStart(6, '0')}</p>
+    </div>
+    <p style="color: var(--text-muted);">Покажите эту карту на ресепшене клуба.</p>
   `;
-  
-  if (typeof QRCode !== 'undefined') {
-    QRCode.toCanvas(document.createElement('canvas'), `NEFT-USER-${user.id}`, { width: 180, margin: 1 }, function (error, canvas) {
-      if (error) {
-        console.error(error);
-        document.getElementById('qrcode-container').innerHTML = '<p>Ошибка загрузки QR</p>';
-      } else {
-        document.getElementById('qrcode-container').appendChild(canvas);
-      }
-    });
-  } else {
-    document.getElementById('qrcode-container').innerHTML = '<p>Библиотека QR не загружена</p>';
-  }
 }
 
 async function viewMyPurchases() {
@@ -199,12 +190,52 @@ async function viewUsers() {
 async function viewAllPurchases() {
   const res = await fetch('/api/admin/purchases', { credentials: 'include' });
   const purchases = await res.json();
+  
   document.getElementById('panelContent').innerHTML = `
     <h2>Все покупки</h2>
-    <table><thead><tr><th>Клиент</th><th>Абонемент</th><th>Сумма</th></tr></thead><tbody>
-      ${purchases.map(p => `<tr><td>${p.user_name}</td><td>${p.membership_title}</td><td>${p.price} ₽</td></tr>`).join('')}
-    </tbody></table>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Клиент</th>
+          <th>Абонемент</th>
+          <th>Сумма</th>
+          <th>Действие</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${purchases.map(p => `
+          <tr>
+            <td>${p.id}</td>
+            <td>${p.user_name}</td>
+            <td>${p.membership_title}</td>
+            <td>${p.price} ₽</td>
+            <td>
+              <button class="btn btn--ghost delete-purchase-btn" 
+                      style="padding:4px 8px; font-size:11px; color:var(--burgundy); border-color:var(--burgundy);" 
+                      data-id="${p.id}">
+                Удалить
+              </button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
   `;
+
+  document.querySelectorAll('.delete-purchase-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Вы уверены, что хотите удалить эту покупку?')) return;
+      
+      const id = btn.dataset.id;
+      await fetch(`/api/admin/purchases/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      
+      viewAllPurchases(); 
+    });
+  });
 }
 
 async function viewAdminReviews() {

@@ -12,22 +12,12 @@ app.use(cors({ origin: 'http://localhost:5000', credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-const PROJECT_DIR = path.join('C:', 'Users', 'kinom', 'Desktop', 'neft');
-
-app.use(express.static(PROJECT_DIR));
+// ТЕПЕРЬ СЕРВЕР БЕРЕТ ФАЙЛЫ ИЗ СВОЕЙ ЖЕ ПАПКИ (ГДЕ ЛЕЖИТ index.html)
+app.use(express.static(__dirname));
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(PROJECT_DIR, 'index.html'));
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
-
-app.get('/about.html', (req, res) => {
-    res.sendFile(path.join(PROJECT_DIR, 'about.html'));
-});
-
-app.get('/account.html', (req, res) => {
-    res.sendFile(path.join(PROJECT_DIR, 'account.html'));
-});
-
 
 const auth = (req, res, next) => {
     const token = req.cookies.token;
@@ -147,6 +137,11 @@ app.get('/api/admin/purchases', auth, adminOnly, async (req, res) => {
         JOIN memberships m ON p.membership_id = m.id
     `);
     res.json(rows);
+});
+
+app.delete('/api/admin/purchases/:id', auth, adminOnly, async (req, res) => {
+    await db.query('DELETE FROM purchases WHERE id = ?', [req.params.id]);
+    res.json({ message: 'Покупка удалена' });
 });
 
 app.delete('/api/admin/reviews/:id', auth, adminOnly, async (req, res) => {
