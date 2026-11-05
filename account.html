@@ -9,7 +9,6 @@
 </head>
 <body>
 
-<!-- ШАПКА -->
 <header class="header">
   <div class="container header__inner">
     <a href="index.html" class="logo">
@@ -26,17 +25,14 @@
   </div>
 </header>
 
-<!-- ОСНОВНОЙ КОНТЕНТ -->
 <main class="account">
   <div class="container">
-    <!-- Сюда JS будет вставлять содержимое кабинета -->
     <div id="accountContent">
       <p class="empty">Загрузка...</p>
     </div>
   </div>
 </main>
 
-<!-- ПОДВАЛ -->
 <footer class="footer">
   <div class="container footer__inner">
     <div>
@@ -63,13 +59,10 @@
   <div class="footer__bottom">© 2026 NEFT FITNESS · PERSONA SPORT. Все права защищены.</div>
 </footer>
 
-<!-- ПОДКЛЮЧЕНИЕ СКРИПТОВ -->
-<!-- 1. Библиотека для QR-кодов -->
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <!-- 2. Ваши скрипты -->
 <script src="js/auth.js"></script>
 
-<!-- 3. Логика самого кабинета -->
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
   const user = await Auth.getCurrent();

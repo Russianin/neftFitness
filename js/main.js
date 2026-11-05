@@ -10,17 +10,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 function renderServices() {
   const grid = document.getElementById('servicesGrid');
   if (!grid) return;
+  
   const services = [
-    { title: 'Тренажёрный зал', desc: 'Силовые и кардио-тренажёры.', image: 'https://www.worldclass.ru/upload/resize_cache/iblock/f6a/1300_760_0/dsc_3.jpg' },
-    { title: 'Бассейн 25м', desc: 'Дорожки 25 метров.', image: 'https://www.gorabelaya.ru/upload/iblock/a7e/5h82okjy2p11z7fgvrmisujy0wp00x07.JPG' },
-    { title: 'Групповые программы', desc: 'Йога, пилатес, кроссфит.', image: 'https://special.worldclass-kgd.ru/upload/iblock/ec8/kd35k05au7eu81bl9x1aldrwd8cimh7y.webp' },
-    { title: 'Хаммам и сауна', desc: 'Восстановление.', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWGJbc0UJTuToqCPFittPcqgjOyXHYAK7uwSI3ct-_CCja47XNhepnkryH&s=10' },
-    { title: 'Тренер', desc: 'Индивидуально.', image: 'https://profi.ru/static/img/preg-landing/sprt.jpg' }
+    { title: 'Тренажёрный зал', desc: 'Силовые и кардио-тренажёры, зона свободных весов.', image: 'img/gym.jpg' },
+    { title: 'Бассейн 25м', desc: 'Дорожки 25 метров, аквааэробика, свободное плавание.', image: 'img/pool.webp' },
+    { title: 'Групповые программы', desc: 'Йога, пилатес, кроссфит, джампинг — 25+ направлений.', image: 'img/group.jpg' },
+    { title: 'Хаммам и сауна', desc: 'Восстановление после тренировок.', image: 'img/sauna.jpg' },
+    { title: 'Тренер', desc: 'Индивидуальная программа с тренером.', image: 'img/trener.jpg' }
   ];
+  
   grid.innerHTML = services.map(s => `
       <article class="card card--service">
-        <div class="card--service__img"><img src="${s.image}" alt="${s.title}" loading="lazy" onerror="this.parentElement.classList.add('fallback-bg'); this.parentElement.innerHTML='<span>${s.title[0]}</span>';"></div>
-        <div class="card__content"><h3>${s.title}</h3><p>${s.desc}</p></div>
+        <div class="card--service__img">
+          <img src="${s.image}" alt="${s.title}" loading="lazy" 
+               onerror="this.style.display='none'; this.parentElement.classList.add('fallback-bg'); this.parentElement.innerHTML='<span>${s.title.charAt(0)}</span>';">
+        </div>
+        <div class="card__content">
+          <h3>${s.title}</h3>
+          <p>${s.desc}</p>
+        </div>
       </article>
   `).join('');
 }
@@ -88,13 +96,13 @@ async function renderReviews() {
   try {
     const res = await fetch('/api/reviews');
     const reviews = await res.json();
-    grid.innerHTML = reviews.map(r => `
+    grid.innerHTML = reviews.length ? reviews.map(r => `
       <article class="review">
         <div class="review__stars">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div>
         <p class="review__text">${r.text}</p>
         <div class="review__author">${r.author}</div>
       </article>
-    `).join('');
+    `).join('') : '<p class="empty">Пока нет отзывов.</p>';
   } catch (e) {
     grid.innerHTML = '<p class="empty">Не удалось загрузить отзывы</p>';
   }
@@ -104,32 +112,47 @@ async function initReviewForm() {
   const wrap = document.getElementById('reviewFormWrap');
   const form = document.getElementById('reviewForm');
   if (!wrap || !form) return;
+  
   if (await Auth.getCurrent()) wrap.hidden = false;
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const text = document.getElementById('reviewText').value.trim();
+    const rating = document.getElementById('reviewRating').value;
+    
     const res = await fetch('/api/reviews', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: document.getElementById('reviewText').value, rating: document.getElementById('reviewRating').value }),
+      body: JSON.stringify({ text, rating }),
       credentials: 'include'
     });
-    if (res.ok) { form.reset(); renderReviews(); alert('Спасибо!'); }
-    else alert('Ошибка! Войдите в аккаунт.');
+    if (res.ok) { 
+      form.reset(); 
+      renderReviews(); 
+      alert('Спасибо за отзыв!'); 
+    } else {
+      alert('Ошибка! Войдите в аккаунт.');
+    }
   });
 }
 
 let pendingBuyId = null, pendingPrice = null;
+
 function openBuyModal(id, price) {
-  pendingBuyId = id; pendingPrice = price;
+  pendingBuyId = id; 
+  pendingPrice = price;
   document.getElementById('buyTitle').textContent = 'Оформление';
-  document.getElementById('buyInfo').innerHTML = `<p>Итого: <strong>${price.toLocaleString('ru-RU')} ₽</strong></p>`;
+  document.getElementById('buyInfo').innerHTML = `
+    <p>Вы выбрали абонемент.</p>
+    <p style="margin-top:8px;font-size:18px">Итого к оплате: <strong>${price.toLocaleString('ru-RU')} ₽</strong></p>
+  `;
   document.getElementById('buyModal').hidden = false;
 }
 
 function initBuyModal() {
   const modal = document.getElementById('buyModal');
   if (!modal) return;
+  
   document.getElementById('buyConfirm').addEventListener('click', async () => {
     const res = await fetch('/api/purchases', {
       method: 'POST',
@@ -137,13 +160,17 @@ function initBuyModal() {
       body: JSON.stringify({ membershipId: pendingBuyId, price: pendingPrice }),
       credentials: 'include'
     });
+    
     const msg = document.getElementById('buyMsg');
     if (res.ok) {
-      msg.className = 'form-msg show form-msg--ok'; msg.textContent = 'Успешно!';
-      setTimeout(() => location.href = 'account.html', 1000);
+      msg.className = 'form-msg show form-msg--ok'; 
+      msg.textContent = 'Абонемент оформлен! Переходим в кабинет...';
+      setTimeout(() => location.href = 'account.html', 1200);
     } else {
-      msg.className = 'form-msg show form-msg--err'; msg.textContent = 'Ошибка (нужна авторизация)';
+      msg.className = 'form-msg show form-msg--err'; 
+      msg.textContent = 'Ошибка покупки (возможно, нет авторизации)';
     }
   });
+  
   modal.querySelectorAll('[data-close]').forEach(el => el.addEventListener('click', () => modal.hidden = true));
 }

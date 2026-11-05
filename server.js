@@ -12,32 +12,23 @@ app.use(cors({ origin: 'http://localhost:5000', credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-// ==========================================
-// ЯВНОЕ УКАЗАНИЕ ПУТИ К ВАШЕЙ ПАПКЕ С САЙТОМ
-// ==========================================
-// Мы жестко прописываем путь к папке neft на вашем рабочем столе
 const PROJECT_DIR = path.join('C:', 'Users', 'kinom', 'Desktop', 'neft');
 
-// Раздача статических файлов (CSS, JS, картинки)
 app.use(express.static(PROJECT_DIR));
 
-// Обработчик главной страницы
 app.get('/', (req, res) => {
     res.sendFile(path.join(PROJECT_DIR, 'index.html'));
 });
 
-// Обработчик страницы "О нас" (на всякий случай)
 app.get('/about.html', (req, res) => {
     res.sendFile(path.join(PROJECT_DIR, 'about.html'));
 });
 
-// Обработчик личного кабинета
 app.get('/account.html', (req, res) => {
     res.sendFile(path.join(PROJECT_DIR, 'account.html'));
 });
 
 
-// ==================== MIDDLEWARE ====================
 const auth = (req, res, next) => {
     const token = req.cookies.token;
     if (!token) return res.status(401).json({ error: 'Не авторизован' });
@@ -54,9 +45,6 @@ const adminOnly = (req, res, next) => {
     next();
 };
 
-// ==================== МАРШРУТЫ API ====================
-
-// РЕГИСТРАЦИЯ
 app.post('/api/register', async (req, res) => {
     const { name, phone, email, password, category } = req.body;
     try {
@@ -69,7 +57,6 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-// ВХОД
 app.post('/api/login', async (req, res) => {
     const { phone, password } = req.body;
     try {
@@ -89,19 +76,16 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// ВЫХОД
 app.post('/api/logout', (req, res) => {
     res.clearCookie('token');
     res.json({ message: 'Выход выполнен' });
 });
 
-// ПРОВЕРКА СЕССИИ
 app.get('/api/me', auth, async (req, res) => {
     const [rows] = await db.query('SELECT id, name, phone, email, role, category FROM users WHERE id = ?', [req.user.id]);
     res.json(rows[0]);
 });
 
-// ДАННЫЕ ДЛЯ САЙТА
 app.get('/api/memberships', async (req, res) => {
     const [rows] = await db.query('SELECT * FROM memberships');
     const data = rows.map(m => ({ 
@@ -122,7 +106,6 @@ app.get('/api/reviews', async (req, res) => {
     res.json(rows);
 });
 
-// ДЕЙСТВИЯ ПОЛЬЗОВАТЕЛЯ
 app.post('/api/purchases', auth, async (req, res) => {
     const { membershipId, price } = req.body;
     const expiresAt = new Date();
@@ -146,7 +129,6 @@ app.post('/api/reviews', auth, async (req, res) => {
     res.status(201).json({ message: 'Успешно' });
 });
 
-// АДМИН-ПАНЕЛЬ
 app.get('/api/admin/users', auth, adminOnly, async (req, res) => {
     const [rows] = await db.query('SELECT id, name, phone, role, category FROM users');
     res.json(rows);
@@ -172,6 +154,5 @@ app.delete('/api/admin/reviews/:id', auth, adminOnly, async (req, res) => {
     res.json({ message: 'Отзыв удален' });
 });
 
-// ЗАПУСК
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Сервер запущен на http://localhost:${PORT}`));
