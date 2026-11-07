@@ -33,8 +33,10 @@ function renderServices() {
 async function renderMemberships() {
   const grid = document.getElementById('membershipsGrid');
   if (!grid) return;
+  
   const user = await Auth.getCurrent();
   let memberships = [];
+  
   try {
     const res = await fetch('/api/memberships');
     if (!res.ok) throw new Error();
@@ -54,6 +56,7 @@ async function renderMemberships() {
 
   grid.innerHTML = memberships.map(m => {
     const canBuy = !user || m.allowed_categories.includes(user.category);
+    
     let finalPrice = m.price;
     let hasDiscount = false;
     
@@ -71,9 +74,15 @@ async function renderMemberships() {
       <article class="card card--membership">
         <h3 style="font-family:'Bebas Neue';font-size:26px;text-transform:uppercase;margin-bottom:8px;">${m.title}</h3>
         <div class="price">${priceHTML}<small>/${m.period}</small></div>
-        ${hasDiscount ? `<p style="color:var(--burgundy); font-size:12px; margin-bottom:12px; font-weight:bold;">Скидка ${discountMap[user.category]}% (${user.category})</p>` : ''}
+        
+        ${hasDiscount ? `<p style="color:var(--burgundy); font-size:12px; margin-bottom:12px; font-weight:bold;">Скидка ${discountMap[user.category]}%</p>` : ''}
+        
         <ul class="features">${m.features.map(f => `<li>${f}</li>`).join('')}</ul>
-        <button class="btn ${canBuy ? 'btn--cta' : 'btn--ghost'}" data-buy="${m.id}" data-price="${finalPrice}" ${canBuy ? '' : 'disabled'}>
+        
+        <button class="btn ${canBuy ? 'btn--cta' : 'btn--ghost'}" 
+                data-buy="${m.id}" 
+                data-price="${finalPrice}" 
+                ${canBuy ? '' : 'disabled'}>
           ${canBuy ? 'Выбрать' : 'Недоступно'}
         </button>
       </article>`;
@@ -81,7 +90,10 @@ async function renderMemberships() {
 
   grid.querySelectorAll('[data-buy]').forEach(btn => {
     btn.addEventListener('click', async () => {
-      if (!await Auth.getCurrent()) { document.querySelector('[data-open="login"]')?.click(); return; }
+      if (!await Auth.getCurrent()) { 
+        document.querySelector('[data-open="login"]')?.click(); 
+        return; 
+      }
       openBuyModal(Number(btn.dataset.buy), Number(btn.dataset.price));
     });
   });

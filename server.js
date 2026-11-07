@@ -12,7 +12,6 @@ app.use(cors({ origin: 'http://localhost:5000', credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-// ТЕПЕРЬ СЕРВЕР БЕРЕТ ФАЙЛЫ ИЗ СВОЕЙ ЖЕ ПАПКИ (ГДЕ ЛЕЖИТ index.html)
 app.use(express.static(__dirname));
 
 app.get('/', (req, res) => {
